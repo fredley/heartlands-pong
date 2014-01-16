@@ -1,0 +1,188 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Pong!</title>
+    <!-- This is our CSS styles -->
+    <style type='text/css'>
+      /* Styles for the body of the document
+       * These 'cascade' down to all the other elements
+       * contained within, so they'll apply to everything
+       */
+       body{
+        background: black;
+        color:white;
+       }
+      /* The play area */
+      #pitch{
+        border:1px solid white;
+        width:800px;
+        height:600px;
+        /* By setting the left and right margins to auto,
+         * the <div> will be centred in the page
+         * The order of the different sizes is
+         * Top, Right, Bottom, Left (clockwise)
+         */
+        margin:50px auto 0px auto;
+        /* We have to set position to relative so that we can position
+         * everything else absolutely within the pitch - see below
+         */
+        position: relative;
+      }
+      /* The paddles. */
+      .paddle{
+        width:20px;
+        height:100px;
+        background: white;
+        /* The position property lets us set the position of the
+         * <div> in terms of a mathematical grid */
+        position: absolute;
+        top: 0px;
+      }
+      /* We set the 'left' property separately for the two paddles */
+      #paddle-left{
+        left:0px;
+      }
+      #paddle-right{
+        left:780px;
+      }
+      #ball{
+        background: white;
+        /* This sets how big the curve of the corners is.
+         * Because the curve is equal to half the size of the ball,
+         * it will make a circle
+         */
+        border-radius:30px;
+        height:60px;
+        width:60px;
+        position: absolute;
+        left:370px;
+        top:270px;
+      }
+      #scoreboard{
+        width:800px;
+        height:30px;
+        /* This is shorthand for '0 auto 0 auto' */
+        margin:0 auto;
+      }
+      .score{
+        width: 400px;
+        text-align:center;
+        font-size:24px;
+        /* Float the <div> left, so that they stack side-by-side */
+        float:left;
+      }
+    </style>
+    <!-- This grabs a copy of the jQuery framework directly from Google -->
+    <script type='text/javascript' src='https://ajax.googleapis.com/ajax/libs/jquery/1.6.2/jquery.min.js'></script>
+    <!-- This is our Javascript code -->
+    <script type='text/javascript'>
+
+    // Here we declare some variables that we're going to use.
+    // These store the state of our game.
+    var paddleLeft = 0;
+    var paddleRight = 0;
+    // These two variables store the position of the ball
+    var ballX = 370
+    var ballY = 270;
+    // These two variables store the direction the ball is travelling
+    var ballDX = 1;
+    var ballDY = -1;
+    // These two variables store the scores!
+    var scoreLeft = 0;
+    var scoreRight = 0
+
+    // We are defining a function here called moveBall.
+    // It won't be run until we call it though
+    function moveBall(){
+      if(ballY == 0 || ballY == 540){
+        // We've hit the top or bottom! We should bounce by changing the Y direction.
+        // Multiplying it by -1 will change +1 to -1 and vice versa!
+        ballDY = -1 * ballDY;
+      }
+      if(ballX == 20){
+        // We've hit the left side
+        if(!hitPaddle(paddleLeft)){
+          // We haven't hit the paddle. The ! means NOT, so if hitPaddle returns
+          // True, we'll get False instead and vice-versa
+          scoreRight = scoreRight + 1;
+          // Add one to the score and write it back to the HTML
+          $('#score-right').html(scoreRight);
+        }
+        ballDX = 1;
+      }
+      if(ballX == 720){
+        // We've hit the right side
+        if(!hitPaddle(paddleRight)){
+          scoreLeft = scoreLeft + 1;
+          $('#score-left').html(scoreLeft);
+        }
+        ballDX = -1;
+      }
+      // Add the directions to the position of the ball
+      ballX = ballX + ballDX;
+      ballY = ballY + ballDY;
+      // Set the position of the ball using CSS to the new position
+      $('#ball').css({
+        'left': ballX,
+        'top': ballY
+      })
+    }
+
+    function hitPaddle(paddle){
+      // We need to check that the edge of the ball (ballY + half the height: 30)
+      // is both below the top (paddle) and (&&) above the bottom (paddle + 100)
+      // of the paddle. This function will return True or False
+      return (paddle <= ballY + 30) && (paddle + 100 >= ballY + 30)
+    }
+
+    // Here we bind to a function that is launched when the page is ready.
+    // If we didn't do this, our code might play before the rest of the page
+    // had loaded, which could cause an error
+    $(document).ready(function(){
+
+      // This binds to the function that is launched whenever a key is pressed.
+      $('body').keypress(function(event){
+        // We need to look at the event to see if it is a key we're interested in
+        if(event.which == 113){ // 113 is the keycode for q
+          // If that value is greater than 0 (the paddle is not hitting the top),
+          // we subtract 10 and change the position of the paddle
+          if(paddleLeft > 0){
+            paddleLeft = paddleLeft - 10;
+            $('#paddle-left').css('top',paddleLeft);
+          }
+        }else if(event.which == 97){ // 97 is the keycode for a
+          // We check it's not over 500 as otherwise the paddle would hit the bottom
+          if(paddleLeft < 500){
+            paddleLeft = paddleLeft + 10;
+            $('#paddle-left').css('top',paddleLeft);
+          }
+        }else if(event.which == 112){ // p
+          if(paddleRight > 0){
+            paddleRight = paddleRight - 10;
+            $('#paddle-right').css('top',paddleRight);
+          }
+        }else if(event.which == 108){ // l
+          if(paddleRight < 500){
+            paddleRight = paddleRight + 10;
+            $('#paddle-right').css('top',paddleRight);
+          }
+        }
+      });
+
+      // The function moveBall is now schedule to happen every 5 milliseconds
+      setInterval(function(){ moveBall(); },5);
+
+    });
+    </script>
+  </head>
+    <div id='scoreboard'>
+      <div id='score-left' class='score'>0</div>
+      <div id='score-right' class='score'>0</div>
+    </div>
+    <div id='pitch'>
+      <div id='paddle-left' class='paddle'></div>
+      <div id='ball'></div>
+      <div id='paddle-right' class='paddle'></div>
+    </div>
+  </body>
+</html>
